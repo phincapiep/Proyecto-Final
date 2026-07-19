@@ -33,19 +33,20 @@ Se definieron los requerimientos técnicos, excluyendo intencionalmente el uso d
 
 
 ### Fase de Diseño Mecánico y Fabricación: 
-Se buscó y analizó la estructura física del dispensador utilizando tecnología de impresión 3D, garantizando un soporte firme para el alimento y el servomotor.
+Se buscó y analizó la estructura física del dispensador utilizando tecnología de impresión 3D, garantizando un soporte firme para el alimento y el servomotor. Además, para lograr una dispensación de alimento basada en el tiempo de giro y no en un ángulo fijo, se tomó un servomotor estándar de 180° y se modificó para obtener rotación continua. Esto se logró retirando el tope mecánico de los engranajes y sustituyendo el potenciómetro interno por un divisor de voltaje fijo compuesto por dos resistencias de igual valor, engañando al circuito de control interno para que gire continuamente al recibir un pulso de 2.0 ms y se detenga completamente al recibir el pulso de equilibrio de 1.5 ms.
 
+
+En la siguiente tabla se resumen los cambios físicos y lógicos aplicados al motor:
+
+| Característica | Servomotor Original (180°) | Servomotor Modificado (Rotación Continua 360°) |
+| :--- | :--- | :--- |
+| **Tope Mecánico** | Presente (limita el ángulo de giro). | **Eliminado** (permite el giro libre). |
+| **Sensor Interno** | Potenciómetro (mide el ángulo). | **2 Resistencias fijas** (engañan al controlador). |
+| **Pulso PWM: 1.5 ms**| Se mueve a la posición central (90°).| **Punto de equilibrio:** El motor se detiene y frena. |
+| **Pulso PWM: 2.0 ms**| Se mueve al extremo máximo (180°). | **Giro constante:** Avanza a velocidad máxima. |
 
 ### Fase de Desarrollo Lógico: 
-Se modularizó el sistema en Verilog, comenzando por las pruebas individuales del servomotor y los displays en protoboard, para luego desarrollar el reloj interno y la memoria de configuración. Además, para lograr una dispensación de alimento basada en el tiempo de giro y no en un ángulo fijo, se tomó un servomotor estándar de 180° y se modificó para obtener rotación continua. Esto se logró retirando el tope mecánico de los engranajes y sustituyendo el potenciómetro interno por un divisor de voltaje fijo compuesto por dos resistencias de igual valor, engañando al circuito de control interno para que gire continuamente al recibir un pulso de 2.0 ms y se detenga completamente al recibir el pulso de equilibrio de 1.5 ms.
-
-
-### Fase de Integración y Pruebas: 
-Se ensambló la electrónica dentro de la carcasa impresa en 3D. Finalmente, se realizaron pruebas de funcionamiento con alimento real para calibrar el tiempo de apertura de las compuertas y asegurar la estabilidad de la estructura bajo carga.  
-
-
-
-Para cumplir con los requerimientos del proyecto, el sistema fue diseñado bajo un enfoque modular, donde cada bloque cumple una función específica dentro de la arquitectura de la FPGA. A continuación, se detalla el funcionamiento de cada uno de ellos:
+Se modularizó el sistema en Verilog, comenzando por las pruebas individuales del servomotor y los displays en protoboard, para luego desarrollar el reloj interno y la memoria de configuración. A continuación se datalla cada módulo:
 
 #### 1. top_module (Integración Principal)
 Este es el módulo de mayor jerarquía arquitectónica. Su función no es procesar lógica, sino actuar como el "esqueleto" del sistema. Aquí se instancian y se interconectan mediante cables internos todos los demás módulos. Además, es el encargado de recibir las señales físicas de la FPGA (como el reloj de 50 MHz, los botones y los switches) y enrutar las señales de salida hacia los actuadores físicos (servomotor, LEDs y displays de 7 segmentos). Se incluye lógica de inversión (assign seg = ~seg_raw;) para adaptar las señales a la configuración de ánodo/cátodo común de la tarjeta de desarrollo.
@@ -77,6 +78,13 @@ Este es el comparador principal. Constantemente convierte la hora actual del rel
 
 #### 9. servo_pwm (Controlador Modulador del Servomotor)
 Los servomotores no funcionan con corriente continua simple, sino mediante Modulación por Ancho de Pulsos (PWM). Este módulo crea un ciclo de trabajo estándar de 20 milisegundos. Dentro de esa ventana de tiempo, si recibe la orden de alimentación (motor_active en alto), genera un pulso en alto constante de 2.0 milisegundos para obligar al servomotor a girar y dejar caer la comida. Cuando está en reposo, genera un pulso de 1.5 milisegundos, lo que mantiene al motor en su punto muerto (frenado), evitando que el peso del alimento abra las compuertas por gravedad.
+
+
+### Fase de Integración y Pruebas: 
+Se ensambló la electrónica dentro de la carcasa impresa en 3D. Finalmente, se realizaron pruebas de funcionamiento con alimento real para calibrar el tiempo de apertura de las compuertas y asegurar la estabilidad de la estructura bajo carga.  
+
+
+
 
 ## Resultados
 
