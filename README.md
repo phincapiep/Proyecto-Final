@@ -28,10 +28,13 @@ Diseñar e implementar un comedero automático digital para gatos que dosifique 
 El proyecto se desarrolló siguiendo un modelo secuencial e incremental:
 
 Fase de Planificación: Se definieron los requerimientos técnicos, excluyendo intencionalmente el uso de microcontroladores y sensores externos para mantener el enfoque digital. 
+\&nbsp
 Fase de Diseño Mecánico y Fabricación: Se buscó y analizó la estructura física del dispensador utilizando tecnología de impresión 3D, garantizando un soporte firme para el alimento y el servomotor.
+\&nbsp
 Fase de Desarrollo Lógico: Se modularizó el sistema en Verilog, comenzando por las pruebas individuales del servomotor y los displays en protoboard, para luego desarrollar el reloj interno y la memoria de configuración. Además, para lograr una dispensación de alimento basada en el tiempo de giro y no en un ángulo fijo, se tomó un servomotor estándar de 180° y se modificó para obtener rotación continua. Esto se logró retirando el tope mecánico de los engranajes y sustituyendo el potenciómetro interno por un divisor de voltaje fijo compuesto por dos resistencias de igual valor, engañando al circuito de control interno para que gire continuamente al recibir un pulso de 2.0 ms y se detenga completamente al recibir el pulso de equilibrio de 1.5 ms.
+\&nbsp
 Fase de Integración y Pruebas: Se ensambló la electrónica dentro de la carcasa impresa en 3D. Finalmente, se realizaron pruebas de funcionamiento con alimento real para calibrar el tiempo de apertura de las compuertas y asegurar la estabilidad de la estructura bajo carga.  
-
+\&nbsp
 Para cumplir con los requerimientos del proyecto, el sistema fue diseñado bajo un enfoque modular, donde cada bloque cumple una función específica dentro de la arquitectura de la FPGA. A continuación, se detalla el funcionamiento de cada uno de ellos:
 
 ### 1. top_module (Integración Principal)
