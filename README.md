@@ -63,6 +63,13 @@ Se creó primero el reloj 24 horas para tener la base del proyecto, se planteó 
   </figure>
 </div>
 
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/ef9c536c-0acb-4be5-8ec7-c2b7bb813a45" width="943" alt="Diagrama de bloques 1">
+  <br>
+  <em>Figura 1: Diagrama de bloques 1</em>
+</div>
+
 Cuyos módulos no hay que modificar para desarrollar la parte de comparación con la hora configurada.
 
 #### 1. top_module (Integración Principal)
