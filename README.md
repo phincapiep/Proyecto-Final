@@ -154,7 +154,7 @@ El diagrama de estados representativo es el siguiente:
 
 
 <div align="center">
-  <img width="600" height="500" alt="image" src="https://github.com/user-attachments/assets/98e57b7a-241a-46ba-8f05-4cb94ce9462c" />
+  <img width="500" height="400" alt="image" src="https://github.com/user-attachments/assets/98e57b7a-241a-46ba-8f05-4cb94ce9462c" />
   <br>
   <em>Figura 1: Diagrama de bloques 1</em>
 </div>
