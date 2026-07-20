@@ -58,7 +58,7 @@ Se creó primero el reloj 24 horas para tener la base del proyecto, se planteó 
 
 <div align="center">
   <figure>
-    <img width="943" height="100" alt="image" src="https://github.com/user-attachments/assets/ef9c536c-0acb-4be5-8ec7-c2b7bb813a45" />
+    <img width="943" height="150" alt="image" src="https://github.com/user-attachments/assets/ef9c536c-0acb-4be5-8ec7-c2b7bb813a45" />
     <figcaption>Figura 1: Diagrama de bloques 1</figcaption>
   </figure>
 </div>
