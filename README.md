@@ -27,6 +27,11 @@ Diseñar e implementar un comedero automático digital para gatos que dosifique 
 ## Metodólogía 
 El proyecto se desarrolló siguiendo un modelo secuencial e incremental:
 
+El diagrama de bloques planteado fue el siguiente:
+
+<img width="952" height="215" alt="image" src="https://github.com/user-attachments/assets/ef4a3017-9902-45c7-911d-af25bcb66a43" />
+
+
 
 ### Fase de Planificación: 
 Se definieron los requerimientos técnicos, excluyendo intencionalmente el uso de microcontroladores y sensores externos para mantener el enfoque digital.
