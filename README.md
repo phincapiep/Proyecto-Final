@@ -29,9 +29,11 @@ El proyecto se desarrolló siguiendo un modelo secuencial e incremental:
 
 El diagrama de bloques planteado fue el siguiente:
 
-<img width="952" height="215" alt="image" src="https://github.com/user-attachments/assets/ef4a3017-9902-45c7-911d-af25bcb66a43" />
-
-
+<div align="center">
+  <img width="952" height="215" alt="image" src="https://github.com/user-attachments/assets/ef4a3017-9902-45c7-911d-af25bcb66a43" />
+  <br>
+  <em>Figura 1: Diagrama de bloques 1</em>
+</div>
 
 ### Fase de Planificación: 
 Se definieron los requerimientos técnicos, excluyendo intencionalmente el uso de microcontroladores y sensores externos para mantener el enfoque digital.
@@ -157,8 +159,16 @@ El diagrama de estados representativo es el siguiente:
   <em>Figura 1: Diagrama de bloques 1</em>
 </div>
 
+Donde:
 
+| Estado | Detalle                  |
+|----------|--------------------------|
+| So | ESTADO_DESAYUNO |
+| S1 | ESTADO_ALMUERZO |
+| S2 | ESTADO_COMIDA |
+| S3 | ESTADO_LISTO |
 
+En los estados So a S2 se registra el valor de entrada correspondiente y se actualiza el LED a encender para indicar que comida se está configurando y en el ESTADO_LISTO, la máquina se queda ahí a no ser que se oprima rst_n.
 
 #### 8. feeder_control (Lógica de Activación y Dosificación)
 
