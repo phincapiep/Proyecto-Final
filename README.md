@@ -55,7 +55,13 @@ Se modularizó el sistema en Verilog, comenzando por las pruebas individuales de
 
 Se creó primero el reloj 24 horas para tener la base del proyecto, se planteó el siguiente diagrama de bloques para esta parte: 
 
-<img width="1600" height="313" alt="image" src="https://github.com/user-attachments/assets/ef9c536c-0acb-4be5-8ec7-c2b7bb813a45" />
+
+<div align="center">
+  <figure>
+    <img width="943" height="375" alt="image" src="https://github.com/user-attachments/assets/ef9c536c-0acb-4be5-8ec7-c2b7bb813a45" />
+    <figcaption>Figura 1: Diagrama de bloques 1</figcaption>
+  </figure>
+</div>
 
 Cuyos módulos no hay que modificar para desarrollar la parte de comparación con la hora configurada.
 
@@ -105,7 +111,12 @@ La evaluación ocurre desde la unidad que cambia con mayor frecuencia (seg_u) ha
 
 Es un bloque de lógica combinacional. Su única función es tomar un número binario de 4 bits (de 0 a 9) entrante y utilizar una estructura case para determinar qué segmentos específicos (a, b, c, d, e, f, g) deben encenderse en un display físico para formar el carácter numérico correspondiente. Se debe tener en cuenta que la FPGA trabaja en ánodo común, por lo que se envía un 0 lógico al segmento a encender. La estructura de un display 7 segmentos es la siguiente: 
 
-<img width="218" height="334" alt="image" src="https://github.com/user-attachments/assets/3bfba2f8-92bb-4d03-ac67-f5fedaf15d05" />
+<div align="center">
+  <figure>
+    <img width="943" height="375" alt="image" src="https://github.com/user-attachments/assets/3bfba2f8-92bb-4d03-ac67-f5fedaf15d05" />
+    <figcaption>Figura 1: Diagrama de bloques 1</figcaption>
+  </figure>
+</div>
 
 Siendo esta la que se tiene en cuenta a la hora de definir cada caso (0-9)
 
@@ -139,6 +150,13 @@ Finalmente, el módulo incorpora un detector de flanco de subida para evitar lec
 Este módulo gestiona la programación del comedero. Funciona como una Máquina de Estados Finitos (FSM) que transita entre cuatro estados: ESTADO_DESAYUNO, ESTADO_ALMUERZO, ESTADO_COMIDA y ESTADO_LISTO. Al recibir el pulso limpio del botón (confirmación), lee el estado actual de los 5 switches físicos, verifica que el valor sea menor a 24, y lo guarda en registros internos. Concluido el proceso, emite una señal config_done para indicarle al sistema que la programación ha finalizado y el comedero puede empezar a operar automáticamente.
 
 El diagrama de estados representativo es el siguiente:
+
+<div align="center">
+  <figure>
+    <img width="1254" height="1061" alt="image" src="https://github.com/user-attachments/assets/98e57b7a-241a-46ba-8f05-4cb94ce9462c" />
+    <figcaption>Figura 1: Diagrama de bloques 1</figcaption>
+  </figure>
+</div>
 
 <img width="1254" height="1061" alt="image" src="https://github.com/user-attachments/assets/98e57b7a-241a-46ba-8f05-4cb94ce9462c" />
 
