@@ -113,7 +113,7 @@ Es un bloque de lógica combinacional. Su única función es tomar un número bi
 
 <div align="center">
   <figure>
-    <img width="943" height="375" alt="image" src="https://github.com/user-attachments/assets/3bfba2f8-92bb-4d03-ac67-f5fedaf15d05" />
+    <img width="150"height="300" alt="image" src="https://github.com/user-attachments/assets/3bfba2f8-92bb-4d03-ac67-f5fedaf15d05" />
     <figcaption>Figura 1: Diagrama de bloques 1</figcaption>
   </figure>
 </div>
