@@ -51,26 +51,72 @@ En la siguiente tabla se resumen los cambios físicos y lógicos aplicados al mo
 | **Pulso PWM: 2.0 ms**| Se mueve al extremo máximo (180°). | **Giro constante:** Avanza a velocidad máxima. |
 
 ### Fase de Desarrollo Lógico: 
-Se modularizó el sistema en Verilog, comenzando por las pruebas individuales del servomotor y los displays en protoboard, para luego desarrollar el reloj interno y la memoria de configuración. A continuación se datalla cada módulo:
+Se modularizó el sistema en Verilog, comenzando por las pruebas individuales del servomotor y los displays en protoboard, para luego desarrollar el reloj interno y la memoria de configuración.
+
+Se creó primero el reloj 24 horas para tener la base del proyecto, se planteó el siguiente diagrama de bloques para esta parte: 
+
+<img width="1600" height="313" alt="image" src="https://github.com/user-attachments/assets/ef9c536c-0acb-4be5-8ec7-c2b7bb813a45" />
+
+Cuyos módulos no hay que modificar para desarrollar la parte de comparación con la hora configurada.
 
 #### 1. top_module (Integración Principal)
-Este es el módulo de mayor jerarquía arquitectónica. Su función no es procesar lógica, sino actuar como el "esqueleto" del sistema. Aquí se instancian y se interconectan mediante cables internos todos los demás módulos. Además, es el encargado de recibir las señales físicas de la FPGA (como el reloj de 50 MHz, los botones y los switches) y enrutar las señales de salida hacia los actuadores físicos (servomotor, LEDs y displays de 7 segmentos). Se incluye lógica de inversión (assign seg = ~seg_raw;) para adaptar las señales a la configuración de ánodo/cátodo común de la tarjeta de desarrollo.
+Este es el módulo de mayor jerarquía arquitectónica. Su función no es procesar lógica, sino actuar como el "esqueleto" del sistema. Aquí se instancian y se interconectan mediante cables internos todos los demás módulos. Además, es el encargado de recibir las señales físicas de la FPGA (como el reloj de 50 MHz, los botones y los switches) y enrutar las señales de salida hacia los actuadores físicos (servomotor, LEDs y displays de 7 segmentos). Se incluye lógica de inversión (assign seg = ~seg_raw;) para adaptar las señales a la configuración de ánodo/cátodo común de la FPGA.
 
 #### 2. DivFreqN (Divisor de Frecuencia)
-Dado que la FPGA opera con un reloj interno de muy alta velocidad (50 MHz), es imposible utilizar esa señal directamente para contar segundos reales o controlar el motor. Este módulo es un circuito secuencial parametrizable que cuenta los ciclos del reloj de la FPGA y genera un pulso equivalente a un solo ciclo de reloj cuando alcanza un límite (N). En el proyecto, se instanció dos veces:
+
+| Parámetro | Detalle                  |
+|----------|--------------------------|
+| Entradas  | CLK, rst_n         |
+| Salidas  | clk_div |
+
+Dado que la FPGA opera con un reloj interno de muy alta velocidad (50 MHz), no se puede usar esa señal directamente para contar segundos o controlar el motor. Este módulo cuenta los ciclos del reloj de la FPGA y genera un pulso equivalente a un solo ciclo de reloj cuando alcanza un límite (N). En el proyecto, se instanció dos veces:
 
 Una vez dividiendo a 50.000.000 para obtener una frecuencia de 1 Hz (un pulso cada segundo exacto), usado como la base de tiempo del reloj principal.
 
-Una vez dividiendo a 50.000 para obtener una frecuencia de 1 kHz (un pulso cada milisegundo), utilizado para el barrido veloz de los displays.
+Una vez dividiendo a 50.000 para obtener una frecuencia de 1 kHz (un pulso cada milisegundo), utilizado para el barrido de los displays.
+
+Para saber el parámetro en cada caso, se utilizó la siguiente fórmula:
+
+$$
+N = \frac{50 000 000}{f_{out}}
+$$
 
 #### 3. time_counter (Reloj Principal en BCD)
-Este módulo es el núcleo temporal del sistema. Utiliza el pulso de 1 Hz para incrementar un contador digital estructurado en formato BCD (Decimal Codificado en Binario). Cuenta con registros independientes de 4 bits para las unidades y decenas de los segundos, minutos y horas. Incorpora la lógica combinacional necesaria para los desbordamientos típicos de un reloj de 24 horas: al llegar a 9 en las unidades, incrementa las decenas; al llegar a 59 segundos/minutos, incrementa el bloque siguiente; y al detectar las 23:59:59, se reinicia de manera síncrona a 00:00:00.
+
+| Parámetro | Detalle                  |
+|----------|--------------------------|
+| Entradas  | CLK, rst_n, ena_1hz        |
+| Salidas  | sec_u [3:0], sec_d [3:0], min_u [3:0], min_d [3:0], hour_u [3:0], hour_d [3:0] |
+
+Este módulo es el que transforma los segundos en minutos y horas. Utiliza el pulso de 1 Hz para incrementar un contador digital estructurado en formato BCD (Separando así las decenas y unidades para mostrar en el display). Cuenta con registros independientes de 4 bits para las unidades y decenas de los segundos, minutos y horas. Incorpora la lógica combinacional para los desbordamientos de un reloj de 24 horas: al llegar a 9 en las unidades, incrementa las decenas; al llegar a 59 segundos/minutos, incrementa el bloque siguiente; y al detectar las 23:59:59, se reinicia de manera síncrona a 00:00:00.
+
+Para traducir esta lógica al código, se estructuraron las condiciones (if-else) siguiendo un estricto orden de dependencia en cascada:
+
+seg_u → seg_d → min_u → min_d → hour_u → hour_d
+
+La evaluación ocurre desde la unidad que cambia con mayor frecuencia (seg_u) hacia la más lenta (hour_d). Si el registro actual no ha llegado a su límite de desbordamiento, el sistema simplemente le suma 1 (mediante la rama else) y finaliza el proceso. Solo cuando un registro alcanza su tope, se reinicia a 0 y "habilita" la evaluación del siguiente nivel, garantizando que el incremento de las horas y minutos ocurra en el ciclo de reloj exacto.
 
 #### 4. bcd_to_7seg (Decodificador de Visualización)
-Es un bloque de lógica combinacional pura. Su única función es tomar un número binario de 4 bits (de 0 a 9) entrante y utilizar una estructura case para determinar qué segmentos específicos (a, b, c, d, e, f, g) deben encenderse en un display físico para formar el carácter numérico correspondiente.
+
+| Parámetro | Detalle                  |
+|----------|--------------------------|
+| Entradas  | bcd [3:0]       |
+| Salidas  | seg [6:0] |
+
+Es un bloque de lógica combinacional. Su única función es tomar un número binario de 4 bits (de 0 a 9) entrante y utilizar una estructura case para determinar qué segmentos específicos (a, b, c, d, e, f, g) deben encenderse en un display físico para formar el carácter numérico correspondiente. Se debe tener en cuenta que la FPGA trabaja en ánodo común, por lo que se envía un 0 lógico al segmento a encender. La estructura de un display 7 segmentos es la siguiente: 
+
+<img width="218" height="334" alt="image" src="https://github.com/user-attachments/assets/3bfba2f8-92bb-4d03-ac67-f5fedaf15d05" />
+
+Siendo esta la que se tiene en cuenta a la hora de definir cada caso (0-9)
 
 #### 5. display_mux (Multiplexor Dinámico de Displays)
-Para poder mostrar las horas, minutos y segundos (6 dígitos en total) sin agotar los pines de salida de la FPGA, se utilizó la técnica de persistencia de la visión. Este módulo utiliza la señal de 1 kHz para rotar rápidamente entre los 6 displays. Mediante lógica tipo One-Hot, enciende un solo display a la vez y, simultáneamente, enruta el dato correcto (horas, minutos o segundos provenientes del time_counter) hacia el decodificador bcd_to_7seg. Al alternar a 1.000 veces por segundo, el ojo humano percibe que los 6 números están encendidos constantemente.
+
+| Parámetro | Detalle                  |
+|----------|--------------------------|
+| Entradas  | CLK, rst_n, ena_1khz, sec_u [3:0], sec_d [3:0], min_u [3:0], min_d [3:0], hour_u [3:0], hour_d [3:0]  |
+| Salidas  | current_bcd [3:0], display_sel[5:0] |
+
+Para mostrar los 6 dígitos del reloj sin agotar los pines de salida de la FPGA, se implementa una técnica de multiplexación en el tiempo. Utilizando la señal de 1 kHz, el módulo escanea los displays encendiendo solo uno a la vez. En cada paso de esta rápida secuencia, el multiplexor enruta el dígito BCD correspondiente (proveniente del time_counter) hacia el único decodificador de 7 segmentos, activando de manera síncrona el pin de habilitación de dicho display. Al rotar entre los seis dígitos a una velocidad de mil veces por segundo crea la ilusión óptica de que todos los números están encendidos de forma constante y simultánea.
 
 #### 6. button_edge_detect (Antirrebote y Detector de Flanco)
 Los interruptores mecánicos (botones) generan ruido eléctrico al ser presionados, lo que la FPGA leería como múltiples pulsaciones erróneas. Este módulo soluciona el problema implementando un filtro antirrebote de 10 milisegundos. Consiste en un sincronizador de dos etapas y un contador secuencial que verifica que la señal esté estable antes de validarla. Finalmente, incluye un detector de flanco que garantiza que, sin importar cuánto tiempo deje el usuario el dedo sobre el botón, el sistema solo emitirá un pulso limpio de duración de un ciclo de reloj.
@@ -92,6 +138,11 @@ Se ensambló la electrónica dentro de la carcasa impresa en 3D. Finalmente, se 
 
 
 ## Resultados
+
+
+## Uso de la IA
+
+En este proyecto se usó la herramienta de IA de Gemini para organizar y estructurar de mejor manera los módulos, al hacerlos manualmente estaban desordenados y no se entendían facilmente, la IA los estructuraba de mejor manera y cambiaba los nombres de las variables para que se entendiera que era cada una. También se usó para revisar errores en los códigos, al dar errores de compilación, corregía puntuaciones o demás errores comunes al programar.
 
 ## Conclusiones 
 
