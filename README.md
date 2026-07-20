@@ -119,15 +119,46 @@ Siendo esta la que se tiene en cuenta a la hora de definir cada caso (0-9)
 Para mostrar los 6 dígitos del reloj sin agotar los pines de salida de la FPGA, se implementa una técnica de multiplexación en el tiempo. Utilizando la señal de 1 kHz, el módulo escanea los displays encendiendo solo uno a la vez. En cada paso de esta rápida secuencia, el multiplexor enruta el dígito BCD correspondiente (proveniente del time_counter) hacia el único decodificador de 7 segmentos, activando de manera síncrona el pin de habilitación de dicho display. Al rotar entre los seis dígitos a una velocidad de mil veces por segundo crea la ilusión óptica de que todos los números están encendidos de forma constante y simultánea.
 
 #### 6. button_edge_detect (Antirrebote y Detector de Flanco)
-Los interruptores mecánicos (botones) generan ruido eléctrico al ser presionados, lo que la FPGA leería como múltiples pulsaciones erróneas. Este módulo soluciona el problema implementando un filtro antirrebote de 10 milisegundos. Consiste en un sincronizador de dos etapas y un contador secuencial que verifica que la señal esté estable antes de validarla. Finalmente, incluye un detector de flanco que garantiza que, sin importar cuánto tiempo deje el usuario el dedo sobre el botón, el sistema solo emitirá un pulso limpio de duración de un ciclo de reloj.
+
+| Parámetro | Detalle                  |
+|----------|--------------------------|
+| Entradas  | CLK, rst_n, ena_1khz, btn_in  |
+| Salidas  | btn_pulse |
+
+Los interruptores mecánicos generan rebotes eléctricos al ser accionados, lo que la FPGA interpretaría como múltiples pulsaciones erróneas. Para solucionar esto, el módulo implementa un acondicionamiento de señal en tres etapas. Primero, utiliza un sincronizador de dos niveles para alinear la entrada con el reloj de la FPGA y evitar la metaestabilidad. Luego, aplica un filtro antirrebote (debouncer) mediante un contador secuencial que exige que la señal se mantenga ininterrumpidamente estable durante 10 milisegundos antes de registrarla como válida.
+
+Finalmente, el módulo incorpora un detector de flanco de subida para evitar lecturas repetidas. Este bloque garantiza que el sistema emita un único pulso limpio de un ciclo de reloj, independientemente de cuánto tiempo el usuario mantenga accionado el botón. A nivel lógico, esto se logra mediante una compuerta AND que compara el estado validado actual con la negación de su estado en el ciclo anterior, asegurando que se genere exactamente un evento de disparo por cada interacción física.
 
 #### 7. config_memory (Memoria de Horarios y Máquina de Estados)
+
+| Parámetro | Detalle                  |
+|----------|--------------------------|
+| Entradas  | CLK, rst_n, btn_pulse, sw_in [4:0] |
+| Salidas  | hora_desayuno [4:0], hora_almuerzo [4:0], hora_comida [4:0], leds_estado [2:0], config_done |
+
 Este módulo gestiona la programación del comedero. Funciona como una Máquina de Estados Finitos (FSM) que transita entre cuatro estados: ESTADO_DESAYUNO, ESTADO_ALMUERZO, ESTADO_COMIDA y ESTADO_LISTO. Al recibir el pulso limpio del botón (confirmación), lee el estado actual de los 5 switches físicos, verifica que el valor sea menor a 24, y lo guarda en registros internos. Concluido el proceso, emite una señal config_done para indicarle al sistema que la programación ha finalizado y el comedero puede empezar a operar automáticamente.
 
+El diagrama de estados representativo es el siguiente:
+
+<img width="1254" height="1061" alt="image" src="https://github.com/user-attachments/assets/98e57b7a-241a-46ba-8f05-4cb94ce9462c" />
+
+
 #### 8. feeder_control (Lógica de Activación y Dosificación)
+
+| Parámetro | Detalle                  |
+|----------|--------------------------|
+| Entradas  | CLK, rst_n, ena_1hz, config_done, sec_u [3:0], sec_d [3:0], min_u [3:0], min_d [3:0], hour_u [3:0], hour_d [3:0] ,hora_desayuno [4:0], hora_almuerzo [4:0], hora_comida [4:0] |
+| Salidas  | motor_activa |
+
 Este es el comparador principal. Constantemente convierte la hora actual del reloj (que está en formato BCD) a un formato binario de 5 bits para poder compararla con los horarios guardados por el usuario. Cuando las horas coinciden perfectamente y los minutos y segundos están en cero exacto (00:00), el módulo dispara la orden de alimentación. Inmediatamente, inicia una cuenta interna secundaria de 5 segundos. Durante este tiempo, mantiene la salida motor_active en alto, logrando una dosificación precisa basada en tiempo sin necesidad de incorporar sensores adicionales.
 
 #### 9. servo_pwm (Controlador Modulador del Servomotor)
+
+| Parámetro | Detalle                  |
+|----------|--------------------------|
+| Entradas  | CLK, rst_n, ena_1hz, config_done, sec_u [3:0], sec_d [3:0], min_u [3:0], min_d [3:0], hour_u [3:0], hour_d [3:0] ,hora_desayuno [4:0], hora_almuerzo [4:0], hora_comida [4:0] |
+| Salidas  | motor_activa |
+
 Los servomotores no funcionan con corriente continua simple, sino mediante Modulación por Ancho de Pulsos (PWM). Este módulo crea un ciclo de trabajo estándar de 20 milisegundos. Dentro de esa ventana de tiempo, si recibe la orden de alimentación (motor_active en alto), genera un pulso en alto constante de 2.0 milisegundos para obligar al servomotor a girar y dejar caer la comida. Cuando está en reposo, genera un pulso de 1.5 milisegundos, lo que mantiene al motor en su punto muerto (frenado), evitando que el peso del alimento abra las compuertas por gravedad.
 
 
