@@ -114,10 +114,10 @@ Es un bloque de lógica combinacional. Su única función es tomar un número bi
 <div align="center">
   <figure>
     <img width="150"height="300" alt="image" src="https://github.com/user-attachments/assets/3bfba2f8-92bb-4d03-ac67-f5fedaf15d05" />
-    <figcaption>Figura 1: Diagrama de bloques 1</figcaption>
+    <figcaption> Figura 1: Diagrama de bloques 1</figcaption>
   </figure>
 </div>
-
+<br>
 Siendo esta la que se tiene en cuenta a la hora de definir cada caso (0-9)
 
 #### 5. display_mux (Multiplexor Dinámico de Displays)
