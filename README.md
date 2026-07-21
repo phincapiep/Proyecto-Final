@@ -199,6 +199,12 @@ $$
   <em>Figura 1: Diagrama de bloques 1</em>
 </div>
 
+Donde: 
+
+| Estado | Detalle                  |
+|----------|--------------------------|
+| So | ESTADO_REPOSO |
+| S1 | ESTADO_ALIMENTANDO |
 
 #### 9. servo_pwm (Controlador Modulador del Servomotor)
 
