@@ -117,33 +117,9 @@ seg_u → seg_d → min_u → min_d → hour_u → hour_d
 
 La evaluación ocurre desde la unidad que cambia con mayor frecuencia (seg_u) hacia la más lenta (hour_d). Si el registro actual no ha llegado a su límite de desbordamiento, el sistema simplemente le suma 1 (mediante la rama else) y finaliza el proceso. Solo cuando un registro alcanza su tope, se reinicia a 0 y "habilita" la evaluación del siguiente nivel, garantizando que el incremento de las horas y minutos ocurra en el ciclo de reloj exacto.
 
-#### 4. bcd_to_7seg (Decodificador de Visualización)
+#### 5. LCD_controller
 
-| Parámetro | Detalle                  |
-|----------|--------------------------|
-| Entradas  | bcd [3:0]       |
-| Salidas  | seg [6:0] |
-
-Es un bloque de lógica combinacional. Su única función es tomar un número binario de 4 bits (de 0 a 9) entrante y utilizar una estructura case para determinar qué segmentos específicos (a, b, c, d, e, f, g) deben encenderse en un display físico para formar el carácter numérico correspondiente. Se debe tener en cuenta que la FPGA trabaja en ánodo común, por lo que se envía un 0 lógico al segmento a encender. La estructura de un display 7 segmentos es la siguiente: 
-
-<div align="center">
-    <img width="150"height="300" alt="image" src="https://github.com/user-attachments/assets/3bfba2f8-92bb-4d03-ac67-f5fedaf15d05" />
-  <br>
-  <em>Figura 1: Diagrama de bloques 1</em>
-</div>
-
-<br>
-
-Siendo esta la que se tiene en cuenta a la hora de definir cada caso (0-9)
-
-#### 5. display_mux (Multiplexor Dinámico de Displays)
-
-| Parámetro | Detalle                  |
-|----------|--------------------------|
-| Entradas  | CLK, rst_n, ena_1khz, sec_u [3:0], sec_d [3:0], min_u [3:0], min_d [3:0], hour_u [3:0], hour_d [3:0]  |
-| Salidas  | current_bcd [3:0], display_sel[5:0] |
-
-Para mostrar los 6 dígitos del reloj sin agotar los pines de salida de la FPGA, se implementa una técnica de multiplexación en el tiempo. Utilizando la señal de 1 kHz, el módulo escanea los displays encendiendo solo uno a la vez. En cada paso de esta rápida secuencia, el multiplexor enruta el dígito BCD correspondiente (proveniente del time_counter) hacia el único decodificador de 7 segmentos, activando de manera síncrona el pin de habilitación de dicho display. Al rotar entre los seis dígitos a una velocidad de mil veces por segundo crea la ilusión óptica de que todos los números están encendidos de forma constante y simultánea.
+El módulo implementa la interfaz de control para una pantalla alfanumérica basada en el chip HD44780, traduciendo los datos de tiempo en formato BCD (horas, minutos y segundos) a sus respectivos códigos ASCII para formar una cadena con el formato «HH:MM:SS». Para gestionar de forma correcta la diferencia de velocidad entre la FPGA (a 50 MHz) y el controlador LCD, el diseño integra una máquina de estados finita (FSM) que coordina secuencialmente la secuencia de arranque, la inicialización de la pantalla, el posicionamiento del cursor y la transmisión de datos caracter por caracter. Adicionalmente, el módulo controla la temporización precisa de los pulsos de habilitación (lcd_en) con los retardo necesarios para la pantalla (como pausas de 2 ms por comando), permitiendo actualizar la lectura completa una vez por segundo tras recibir el pulso de habilitación ena_1hz.
 
 #### 6. button_edge_detect (Antirrebote y Detector de Flanco)
 
