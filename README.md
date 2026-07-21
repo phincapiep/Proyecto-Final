@@ -21,8 +21,9 @@ Diseñar e implementar un comedero automático digital para gatos que dosifique 
 -   Cable USB como fuente de alimentación del sistema.
 -   Interruptores (Switches) y Pulsadores (Botones) físicos de la FPGA.
 -   Carcasa, armazón y recipiente de alimentación fabricados mediante impresión 3D.
--   Cables de conexión (jumpers) y alimento seco para gatos.  
-## Marco Teórico
+-   Cables de conexión (jumpers) y alimento seco para gatos.
+-   LEDs y pulsador de 4 pines
+-   Resistencias de 3k Ohm
 
 ## Metodólogía 
 El proyecto se desarrolló siguiendo un modelo secuencial e incremental:
@@ -37,6 +38,8 @@ El diagrama de bloques planteado fue el siguiente:
 
 ### Fase de Planificación: 
 Se definieron los requerimientos técnicos, excluyendo intencionalmente el uso de microcontroladores y sensores externos para mantener el enfoque digital.
+
+### Modelado 3D
 
 
 ### Fase de Diseño Mecánico y Fabricación: 
@@ -175,16 +178,34 @@ En los estados So a S2 se registra el valor de entrada correspondiente y se actu
 | Parámetro | Detalle                  |
 |----------|--------------------------|
 | Entradas  | CLK, rst_n, ena_1hz, config_done, sec_u [3:0], sec_d [3:0], min_u [3:0], min_d [3:0], hour_u [3:0], hour_d [3:0] ,hora_desayuno [4:0], hora_almuerzo [4:0], hora_comida [4:0] |
-| Salidas  | motor_activa |
+| Salidas  | motor_active |
 
-Este es el comparador principal. Constantemente convierte la hora actual del reloj (que está en formato BCD) a un formato binario de 5 bits para poder compararla con los horarios guardados por el usuario. Cuando las horas coinciden perfectamente y los minutos y segundos están en cero exacto (00:00), el módulo dispara la orden de alimentación. Inmediatamente, inicia una cuenta interna secundaria de 5 segundos. Durante este tiempo, mantiene la salida motor_active en alto, logrando una dosificación precisa basada en tiempo sin necesidad de incorporar sensores adicionales.
+Este es el comparador principal. Se compone de 3 partes:
+
+1. Constantemente convierte la hora actual del reloj (que está en formato BCD) a un formato binario de 5 bits para poder compararla con los horarios guardados por el usuario. Puesto que las horas de ingreso están en Binario y deben estar en el mismo formato para poder compararlas. Se hace con la siguiente ecuación:
+
+$$
+hora_bin = hour_d × 10 + hour_u
+$$
+
+2. Pulso de 1s. Cuando las horas coinciden perfectamente (desayuno, almuerzo o comida) y los minutos y segundos están en cero exacto (00:00), el módulo dispara la orden de alimentación. Esto se hace con una compuerta "AND" que verifica que la entrada actual sea 1 y la anterior haya sido 0, asegurando así que sea solo un pulso.
+
+
+3. Contador: Inmediatamente después del pulso, se inicia una cuenta interna secundaria de 5 segundos. Durante este tiempo, mantiene la salida motor_active en alto, logrando una dosificación precisa basada en tiempo sin necesidad de incorporar sensores adicionales. Esto se hace con una mini máquina de estados, cuyo diagrama es el siguiente:
+
+<div align="center">
+<img width="550" height="400" alt="image" src="https://github.com/user-attachments/assets/6972d3ce-714a-418e-9d44-d944ad4d10cf" />
+  <br>
+  <em>Figura 1: Diagrama de bloques 1</em>
+</div>
+
 
 #### 9. servo_pwm (Controlador Modulador del Servomotor)
 
 | Parámetro | Detalle                  |
 |----------|--------------------------|
-| Entradas  | CLK, rst_n, ena_1hz, config_done, sec_u [3:0], sec_d [3:0], min_u [3:0], min_d [3:0], hour_u [3:0], hour_d [3:0] ,hora_desayuno [4:0], hora_almuerzo [4:0], hora_comida [4:0] |
-| Salidas  | motor_activa |
+| Entradas  | CLK, rst_n, ena_1hz, motor_active |
+| Salidas  | pwm_out |
 
 Los servomotores no funcionan con corriente continua simple, sino mediante Modulación por Ancho de Pulsos (PWM). Este módulo crea un ciclo de trabajo estándar de 20 milisegundos. Dentro de esa ventana de tiempo, si recibe la orden de alimentación (motor_active en alto), genera un pulso en alto constante de 2.0 milisegundos para obligar al servomotor a girar y dejar caer la comida. Cuando está en reposo, genera un pulso de 1.5 milisegundos, lo que mantiene al motor en su punto muerto (frenado), evitando que el peso del alimento abra las compuertas por gravedad.
 
@@ -209,4 +230,11 @@ En este proyecto se usó la herramienta de IA de Gemini para organizar y estruct
 -  La carcasa impresa en 3D demostró ser el complemento mecánico ideal, soportando el peso del alimento real sin comprometer la estabilidad del sistema y permitiendo un anclaje seguro del servomotor.
 -   El mecanismo de dosificación basado en el tiempo de activación del servomotor (5 segundos de giro) probó ser una alternativa eficaz y precisa, eliminando por completo la necesidad de implementar sensores de peso complejos.
 -    Los subsistemas de multiplexación visual y la gestión de memoria para los horarios funcionaron de manera estable, permitiendo al usuario monitorear el reloj y configurar la dieta de la mascota de forma intuitiva.
--    El proyecto ofrece una solución tangible y económica a la problemática del estrés felino y la alimentación irregular durante la ausencia prolongada de los cuidadores.  
+-    El proyecto ofrece una solución tangible y económica a la problemática del estrés felino y la alimentación irregular durante la ausencia prolongada de los cuidadores.
+
+
+ ## Referencias
+
+ [1] Electronoobs, "Comedero automático para gatos, impresión 3D", YouTube, 5 de marzo de 2022. [Video en línea]. Disponible en: https://www.youtube.com/watch?v=4bRxrsOqyrA.
+
+ 
