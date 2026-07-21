@@ -40,6 +40,10 @@ El diagrama de bloques planteado fue el siguiente:
 Se definieron los requerimientos técnicos, excluyendo intencionalmente el uso de microcontroladores y sensores externos para mantener el enfoque digital.
 
 ### Modelado 3D
+Para la estructura física del proyecto, se utilizó un modelo 3D existente en una página web llamada Ellectronoobs Feeder:
+<img width="586" height="315" alt="image" src="https://github.com/user-attachments/assets/f4bd2e97-efd0-426e-adf6-a7fb430416c8" />
+
+<img width="479" height="444" alt="image" src="https://github.com/user-attachments/assets/0482b367-72d8-40b4-8c02-3d7550fec0e2" />
 
 
 ### Fase de Diseño Mecánico y Fabricación: 
