@@ -236,6 +236,19 @@ Se ensambló la electrónica dentro de la carcasa impresa en 3D. Finalmente, se 
 
 ## Resultados
 
+<div align="center">
+  <img width="952" height="215" alt="image" src="https://github.com/user-attachments/assets/c8bfc769-8a21-475b-bded-74d80541ddf9"  />
+  <br>
+  <em>Figura 1:Comedero para gatos</em>
+</div>
+
+<div align="center">
+  <img width="952" height="215" alt="image" src="https://github.com/user-attachments/assets/69be95f4-099d-44a2-8742-ce68728d976e"   />
+  <br>
+  <em>Figura 1: Comedero para gatos activado</em>
+</div>
+
+
 
 ## Uso de la IA
 
