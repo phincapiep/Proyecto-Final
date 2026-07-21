@@ -119,7 +119,30 @@ La evaluación ocurre desde la unidad que cambia con mayor frecuencia (seg_u) ha
 
 #### 5. LCD_controller
 
+| Parámetro | Detalle                  |
+|----------|--------------------------|
+| Entradas  | CLK, rst_n, ena_1khz, sec_u [3:0], sec_d [3:0], min_u [3:0], min_d [3:0], hour_u [3:0], hour_d [3:0]  |
+| Salidas  | lcd_rs, lcd_rw, lcd_en, lcd_data [7:0] |
+
 El módulo implementa la interfaz de control para una pantalla alfanumérica basada en el chip HD44780, traduciendo los datos de tiempo en formato BCD (horas, minutos y segundos) a sus respectivos códigos ASCII para formar una cadena con el formato «HH:MM:SS». Para gestionar de forma correcta la diferencia de velocidad entre la FPGA (a 50 MHz) y el controlador LCD, el diseño integra una máquina de estados finita (FSM) que coordina secuencialmente la secuencia de arranque, la inicialización de la pantalla, el posicionamiento del cursor y la transmisión de datos caracter por caracter. Adicionalmente, el módulo controla la temporización precisa de los pulsos de habilitación (lcd_en) con los retardo necesarios para la pantalla (como pausas de 2 ms por comando), permitiendo actualizar la lectura completa una vez por segundo tras recibir el pulso de habilitación ena_1hz.
+
+La máquina de estados representativa es la siguiente:
+
+<div align="center">
+<img width="700" height="500" alt="image" src="https://github.com/user-attachments/assets/66cb67f5-cc10-43b3-ae78-dbc940a5e204" />  <br>
+  <em>Figura 1: Diagrama de bloques 1</em>
+</div>
+
+Donde:
+| Estado | Detalle                  |
+|----------|--------------------------|
+| So  | Power_On_Relay  |
+| S1  | Int_sequence |
+| S2  | IDLE  |
+| S3  | Set_cursor |
+| S4  | Send_char  |
+| S5  | Pulse_enable |
+
 
 #### 6. button_edge_detect (Antirrebote y Detector de Flanco)
 
